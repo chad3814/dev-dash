@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
 import { ServerMessage, ClientMessage } from "./types.js";
+import { sendMessage } from "./claude.js";
 
 const clients = new Set<WebSocket>();
 
@@ -39,9 +40,23 @@ export async function registerWebSocket(fastify: FastifyInstance) {
   });
 }
 
-function handleClientMessage(_socket: WebSocket, message: ClientMessage): void {
-  // Handle different message types here
+async function handleClientMessage(
+  _socket: WebSocket,
+  message: ClientMessage
+): Promise<void> {
   switch (message.type) {
+    case "SEND_CLAUDE": {
+      const text = message.payload as string;
+      if (typeof text === "string" && text.trim()) {
+        for await (const event of sendMessage(text)) {
+          broadcastMessage({
+            type: "RECV_CLAUDE",
+            payload: event,
+          });
+        }
+      }
+      break;
+    }
     case "ping":
       // Example: respond to ping
       break;
