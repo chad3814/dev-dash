@@ -1,7 +1,9 @@
 import Fastify, { FastifyInstance } from "fastify";
 import fastifyStatic from "@fastify/static";
+import fastifyWebsocket from "@fastify/websocket";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { registerWebSocket } from "./websocket.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -15,6 +17,10 @@ export async function createServer(
   const fastify = Fastify({
     logger: options.logger ?? true,
   });
+
+  // Register WebSocket support
+  await fastify.register(fastifyWebsocket);
+  await registerWebSocket(fastify);
 
   // Health check endpoint
   fastify.get("/api/health", async () => {
