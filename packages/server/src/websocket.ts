@@ -48,10 +48,23 @@ async function handleClientMessage(
     case "SEND_CLAUDE": {
       const text = message.payload as string;
       if (typeof text === "string" && text.trim()) {
-        for await (const event of sendMessage(text)) {
+        try {
+          for await (const event of sendMessage(text)) {
+            broadcastMessage({
+              type: "RECV_CLAUDE",
+              payload: event,
+            });
+          }
+        } catch (error) {
           broadcastMessage({
             type: "RECV_CLAUDE",
-            payload: event,
+            payload: {
+              type: "error",
+              error:
+                error instanceof Error
+                  ? error.message
+                  : "Unknown error occurred",
+            },
           });
         }
       }

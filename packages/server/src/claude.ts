@@ -5,6 +5,11 @@ let currentStream: ReturnType<Anthropic["messages"]["stream"]> | null = null;
 
 function getClient(): Anthropic {
   if (!client) {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      throw new Error(
+        "ANTHROPIC_API_KEY environment variable is not set. Copy .env.example to .env and add your API key."
+      );
+    }
     client = new Anthropic();
   }
   return client;
